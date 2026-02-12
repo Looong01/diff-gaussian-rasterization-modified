@@ -12,10 +12,16 @@
 #ifndef CUDA_RASTERIZER_FORWARD_H_INCLUDED
 #define CUDA_RASTERIZER_FORWARD_H_INCLUDED
 
+#if defined(USE_ROCM) || defined(__HIP_PLATFORM_AMD__)
+#include <hip/hip_runtime.h>
+#else
 #include <cuda.h>
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+#endif
+#if !defined(__HIP_PLATFORM_AMD__)
 #define GLM_FORCE_CUDA
+#endif
 #include <glm/glm.hpp>
 
 namespace FORWARD

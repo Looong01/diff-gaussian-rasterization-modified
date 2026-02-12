@@ -15,6 +15,28 @@
 #include "config.h"
 #include "stdio.h"
 
+// GPU backend abstraction
+#if defined(USE_ROCM) || defined(__HIP_PLATFORM_AMD__)
+#include <hip/hip_runtime.h>
+#define gpuDeviceSynchronize hipDeviceSynchronize
+#define gpuSuccess hipSuccess
+#define gpuGetErrorString hipGetErrorString
+#define gpuGetLastError hipGetLastError
+#define gpuMemcpy hipMemcpy
+#define gpuMemset hipMemset
+#define gpuMemcpyDeviceToHost hipMemcpyDeviceToHost
+using gpuError_t = hipError_t;
+#else
+#define gpuDeviceSynchronize cudaDeviceSynchronize
+#define gpuSuccess cudaSuccess
+#define gpuGetErrorString cudaGetErrorString
+#define gpuGetLastError cudaGetLastError
+#define gpuMemcpy cudaMemcpy
+#define gpuMemset cudaMemset
+#define gpuMemcpyDeviceToHost cudaMemcpyDeviceToHost
+using gpuError_t = cudaError_t;
+#endif
+
 #define BLOCK_SIZE (BLOCK_X * BLOCK_Y)
 #define NUM_WARPS (BLOCK_SIZE/32)
 
@@ -165,10 +187,10 @@ __forceinline__ __device__ bool in_frustum(int idx,
 
 #define CHECK_CUDA(A, debug) \
 A; if(debug) { \
-auto ret = cudaDeviceSynchronize(); \
-if (ret != cudaSuccess) { \
-std::cerr << "\n[CUDA ERROR] in " << __FILE__ << "\nLine " << __LINE__ << ": " << cudaGetErrorString(ret); \
-throw std::runtime_error(cudaGetErrorString(ret)); \
+auto ret = gpuDeviceSynchronize(); \
+if (ret != gpuSuccess) { \
+std::cerr << "\n[GPU ERROR] in " << __FILE__ << "\nLine " << __LINE__ << ": " << gpuGetErrorString(ret); \
+throw std::runtime_error(gpuGetErrorString(ret)); \
 } \
 }
 

@@ -14,7 +14,11 @@
 #include <iostream>
 #include <vector>
 #include "rasterizer.h"
+#if defined(USE_ROCM) || defined(__HIP_PLATFORM_AMD__)
+#include <hip/hip_runtime.h>
+#else
 #include <cuda_runtime_api.h>
+#endif
 
 namespace CudaRasterizer
 {
